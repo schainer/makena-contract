@@ -2,6 +2,7 @@
 node_modules
 /dist
 /build
+/flatten
 
 # Data Volume
 /storage/data/*
