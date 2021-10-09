@@ -13,7 +13,7 @@ contract MakenaNFT is ERC721Full, Ownable {
 
     mapping(uint256 => bool) _uniqueId;
 
-    constructor(string memory _tokenName, string memory _symbol) ERC721Full(_tokenName, _symbol) {}
+    constructor(string memory _tokenName, string memory _symbol) public ERC721Full(_tokenName, _symbol) {}
 
     function mint(uint256 _id, address _recipient) public onlyOwner {
         require(!_uniqueId[_id], "Invalid Token ID");
