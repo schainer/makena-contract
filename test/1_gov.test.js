@@ -19,8 +19,6 @@ contract('MakenaGov', (accounts) => {
   describe('dice', async () => {
     it('roll dice', async () => {
       let key = await contract.roll();
-      await contract.roll();
-      await contract.roll();
       let res = key.logs[0].args.key.toNumber();
       console.log({ res });
       let check = await contract.checkDice(res);

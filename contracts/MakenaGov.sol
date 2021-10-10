@@ -30,7 +30,7 @@ contract MakenaGov is Ownable {
     }
 
     function checkDice(uint256 key) public onlyOwner returns (uint256 dice, uint256 blockNum, bytes32 hash) {
-        require(key > 0 && diceNumbers[key].blockNumber > 0);
+        require(key > 0 && block.number > diceNumbers[key].blockNumber, 'Invalid Request');
         if (diceNumbers[key].diceNumber == 0) {
             bytes32 _blockHash = blockhash(diceNumbers[key].blockNumber);
             uint256 _diceNum = uint(_blockHash) % 6 + 1;
