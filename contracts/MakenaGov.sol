@@ -34,8 +34,9 @@ contract MakenaGov is Ownable {
     mapping(uint256 => Tile) gameBoard;
     uint256 tileCount = 0;
     uint256 diceKey = 0;
+    Horse horse;
 
-
+    // Game Operation
 
     function roll() public onlyOwner returns (uint256) {
         diceKey += 1;
@@ -44,20 +45,35 @@ contract MakenaGov is Ownable {
         return diceKey;
     }
 
-    function proceedHorse(uint256 key) public onlyOwner returns (uint256 dice, uint256 blockNum, bytes32 hash) {
-        require(key > 0 && block.number > diceNumbers[key].blockNumber, 'Invalid Request');
-        if (diceNumbers[key].diceNumber == 0) {
-            bytes32 _blockHash = blockhash(diceNumbers[key].blockNumber);
-            uint256 _diceNum = uint(_blockHash) % 6 + 1;
-            diceNumbers[key].diceNumber = _diceNum;
-        }
+    function proceedHorse(uint256 key) public onlyOwner {
+        require(key > 0 && diceNumbers[key].blockNumber > 0 && block.number > diceNumbers[key].blockNumber, "Invalid Request");
+        require(diceNumbers[key].diceNumber == 0, "Invalid Request");
+        bytes32 _blockHash = blockhash(diceNumbers[key].blockNumber);
+        uint256 _diceNum = uint(_blockHash) % 6 + 1;
+        diceNumbers[key].diceNumber = _diceNum;
+        //move horse
+        setHorse(_diceNum);
         emit CheckDice(diceNumbers[key].diceNumber, diceNumbers[key].blockNumber, blockhash(diceNumbers[key].blockNumber));
-        dice = diceNumbers[key].diceNumber;
-        blockNum = diceNumbers[key].blockNumber;
-        hash = blockhash(diceNumbers[key].blockNumber);
     }
 
-    function addTile(string memory name, uint256 pieces) {
+    function position(uint256 move) private {
+        uint256 _next = horse.position + move;
+        if (_next > tileCount) {
+            uint256 _round = _next / tileCount;
+            horse.round += _round;
+            _next = _next % tileCount;
+        }
+        horse.position = _next;
+    }
+
+    function getHorse() public view returns (uint256 position, uint256 round) {
+        position = horse.position;
+        round = horse.round;
+    }
+
+    // Gameboard Manage
+
+    function addTile(string memory name, uint256 pieces) public onlyOwner {
         uint256 _index = tileCount;
         tileCount += 1;
         Tile storage newTile = gameBoard[_index];
@@ -66,7 +82,7 @@ contract MakenaGov is Ownable {
         gameBoard[_index] = newTile;
     }
 
-    function splitTile(uint256 tileId, uint256 pieces) {
+    function splitTile(uint256 tileId, uint256 pieces) public onlyOwner {
         Tile storage tile = gameBoard[tileId];
         require(tile.pieces < pieces, "Cannot be smaller");
         tile.pieces = pieces;
