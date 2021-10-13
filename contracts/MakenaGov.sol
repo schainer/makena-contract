@@ -56,7 +56,7 @@ contract MakenaGov is Ownable {
         emit CheckDice(diceNumbers[key].diceNumber, diceNumbers[key].blockNumber, blockhash(diceNumbers[key].blockNumber));
     }
 
-    function position(uint256 move) private {
+    function setHorse(uint256 move) private {
         uint256 _next = horse.position + move;
         if (_next > tileCount) {
             uint256 _round = _next / tileCount;
