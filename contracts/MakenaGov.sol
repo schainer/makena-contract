@@ -22,6 +22,7 @@ contract MakenaGov is Ownable {
     }
 
     struct Tile {
+        uint256 tileId;
         string name;
         uint256 pieces;
         mapping(uint256 => uint256) tokens;
@@ -86,5 +87,9 @@ contract MakenaGov is Ownable {
         Tile storage tile = gameBoard[tileId];
         require(tile.pieces < pieces, "Cannot be smaller");
         tile.pieces = pieces;
+    }
+
+    function mapTokenId(uint256 tokenId) public {
+
     }
 }
