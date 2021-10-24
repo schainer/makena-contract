@@ -17,13 +17,19 @@ contract ProxyRegistry {
 contract ColorNFT is ERC721Full, Ownable, Pausable {
 
     address proxyRegistryAddress;
+    string contractUri;
+    mapping(uint256 => bool)
 
     constructor(
         string memory _name,
         string memory _symbol,
+        string memory _baseUri,
+        string memory _contractUri,
         address _proxyRegistryAddress
     ) ERC721(_name, _symbol) {
         proxyRegistryAddress = _proxyRegistryAddress;
+        _setBaseURI(_baseURI);
+        contractUri = _contractUri;
     }
 
     function mint() public payable whenNotPaused {
@@ -40,6 +46,11 @@ contract ColorNFT is ERC721Full, Ownable, Pausable {
 
     function collect() public onlyOwner {
 
+    }
+
+    function transferOwnership(address newOwner) public onlyOwner {
+        // also renounce admin
+        super.transferOwnership(newOwner);
     }
 
     function isApprovedForAll(address owner, address operator) public view returns (bool) {
