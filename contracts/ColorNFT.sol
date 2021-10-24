@@ -15,10 +15,11 @@ contract ProxyRegistry {
 }
 
 contract ColorNFT is ERC721Full, Ownable, Pausable {
-
     address proxyRegistryAddress;
     string contractUri;
-    mapping(uint256 => bool)
+    uint256 mintPrice;
+    mapping(uint256 => bool) uniqueColor;
+
 
     constructor(
         string memory _name,
@@ -32,26 +33,27 @@ contract ColorNFT is ERC721Full, Ownable, Pausable {
         contractUri = _contractUri;
     }
 
-    function mint() public payable whenNotPaused {
+    function mint(uint256 _color) public payable whenNotPaused {
+        require(msg.value == mintPrice, 'Payment Rejected');
+        require(!uniqueColor[_color], 'Color Exist');
+        _mint(msg.sender, _color);
 
     }
 
-    function setMintPrice() public onlyOwner {
-
+    function setMintPrice(uint256 _price) public onlyOwner {
+        mintPrice = _price;
     }
 
-    function getBalance() public view onlyOwner {
-
+    function collect(uint256 _amount) public onlyOwner {
+        require(address(this).balance >= _amount, 'Not Enough Balance');
+        msg.sender.transfer(_amount);
     }
 
-    function collect() public onlyOwner {
-
-    }
-
-    function transferOwnership(address newOwner) public onlyOwner {
-        // also renounce admin
-        super.transferOwnership(newOwner);
-    }
+//    function transferOwnership(address newOwner) public onlyOwner {
+//        // also renounce admin
+//        // also renounce pauser
+//        super.transferOwnership(newOwner);
+//    }
 
     function isApprovedForAll(address owner, address operator) public view returns (bool) {
         // Whitelist OpenSea proxy contract for easy trading.
