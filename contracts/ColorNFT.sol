@@ -17,6 +17,7 @@ contract ProxyRegistry {
 contract ColorNFT is ERC721Full, Ownable, Pausable {
     address proxyRegistryAddress;
     string contractUri;
+    uint256 contractGen;
     uint256 private _mintPrice;
     uint256 private _mintCount;
     mapping(uint256 => uint256) private _tokenColor;
@@ -27,12 +28,14 @@ contract ColorNFT is ERC721Full, Ownable, Pausable {
         string memory _symbol,
         string memory _baseUri,
         string memory _contractUri,
+        uint256 _gen,
         address _proxyRegistryAddress
     ) ERC721(_name, _symbol) {
         proxyRegistryAddress = _proxyRegistryAddress;
         _setBaseURI(_baseURI);
         contractUri = _contractUri;
         _mintCount = 1;
+        contractGen = _gen;
     }
 
     function mint(uint256 _color) public payable whenNotPaused {
@@ -43,9 +46,10 @@ contract ColorNFT is ERC721Full, Ownable, Pausable {
         _mintCount++;
     }
 
-    function tokenColor(uint256 _id) public view returns (uint256) {
+    function tokenColor(uint256 _id) public view returns (uint256 color, uint256 gen) {
         require(_tokenColor[_id] > 0, 'Bad Request');
-        return _tokenColor[_id];
+        color = _tokenColor[_id];
+        gen = contractGen;
     }
 
     function mintCount() public view returns (uint256) {
