@@ -17,8 +17,9 @@ contract ProxyRegistry {
 contract ColorNFT is ERC721Full, Ownable, Pausable {
     address proxyRegistryAddress;
     string contractUri;
-    uint256 mintPrice;
-    mapping(uint256 => bool) uniqueColor;
+    uint256 private _mintPrice;
+    uint256 private _mintCount;
+    mapping(uint256 => uint256) private _tokenColor;
 
 
     constructor(
@@ -31,29 +32,40 @@ contract ColorNFT is ERC721Full, Ownable, Pausable {
         proxyRegistryAddress = _proxyRegistryAddress;
         _setBaseURI(_baseURI);
         contractUri = _contractUri;
+        _mintCount = 1;
     }
 
     function mint(uint256 _color) public payable whenNotPaused {
-        require(msg.value == mintPrice, 'Payment Rejected');
-        require(!uniqueColor[_color], 'Color Exist');
-        _mint(msg.sender, _color);
+        require(msg.value == _mintPrice, 'Payment Rejected');
+        require(_color <= 16777216, 'Bad Request');
+        _tokenColor[_mintCount] = _color;
+        _mint(msg.sender, _mintCount);
+        _mintCount++;
+    }
 
+    function tokenColor(uint256 _id) public view returns (uint256) {
+        require(_tokenColor[_id] > 0, 'Bad Request');
+        return _tokenColor[_id];
+    }
+
+    function mintCount() public view returns (uint256) {
+        return _mintCount;
     }
 
     function setMintPrice(uint256 _price) public onlyOwner {
-        mintPrice = _price;
+        _mintPrice = _price;
     }
 
-    function collect(uint256 _amount) public onlyOwner {
+    function collectPayment(uint256 _amount) public onlyOwner {
         require(address(this).balance >= _amount, 'Not Enough Balance');
         msg.sender.transfer(_amount);
     }
 
-//    function transferOwnership(address newOwner) public onlyOwner {
-//        // also renounce admin
-//        // also renounce pauser
-//        super.transferOwnership(newOwner);
-//    }
+    //    function transferOwnership(address newOwner) public onlyOwner {
+    //        // also renounce admin
+    //        // also renounce pauser
+    //        super.transferOwnership(newOwner);
+    //    }
 
     function isApprovedForAll(address owner, address operator) public view returns (bool) {
         // Whitelist OpenSea proxy contract for easy trading.
@@ -63,6 +75,5 @@ contract ColorNFT is ERC721Full, Ownable, Pausable {
         }
         return super.isApprovedForAll(owner, operator);
     }
-
 
 }
