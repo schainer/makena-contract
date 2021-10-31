@@ -28,25 +28,28 @@ contract ColorNFT is ERC721Full, Ownable, Pausable {
         string memory _symbol,
         string memory _baseUri,
         string memory _contractUri,
+        uint256 _price,
         uint256 _gen,
         address _proxyRegistryAddress
-    ) ERC721(_name, _symbol) {
+    ) public ERC721Full(_name, _symbol) {
+        _setBaseURI(_baseUri);
         proxyRegistryAddress = _proxyRegistryAddress;
-        _setBaseURI(_baseURI);
         contractUri = _contractUri;
-        _mintCount = 1;
+        _mintCount = 0;
+        _mintPrice = _price;
         contractGen = _gen;
     }
 
     function mint(uint256 _color) public payable whenNotPaused {
         require(msg.value == _mintPrice, 'Payment Rejected');
         require(_color <= 16777216, 'Bad Request');
+        _mintCount++;
         _tokenColor[_mintCount] = _color;
         _mint(msg.sender, _mintCount);
-        _mintCount++;
+        _setTokenURI(_mintCount, Strings.toString(_mintCount));
     }
 
-    function tokenColor(uint256 _id) public view returns (uint256 color, uint256 gen) {
+    function getTokenData(uint256 _id) public view returns (uint256 color, uint256 gen) {
         require(_tokenColor[_id] > 0, 'Bad Request');
         color = _tokenColor[_id];
         gen = contractGen;
@@ -65,11 +68,11 @@ contract ColorNFT is ERC721Full, Ownable, Pausable {
         msg.sender.transfer(_amount);
     }
 
-    //    function transferOwnership(address newOwner) public onlyOwner {
-    //        // also renounce admin
-    //        // also renounce pauser
-    //        super.transferOwnership(newOwner);
-    //    }
+    function transferOwnership(address newOwner) public onlyOwner {
+        super.addPauser(newOwner);
+        super.renouncePauser();
+        super.transferOwnership(newOwner);
+    }
 
     function isApprovedForAll(address owner, address operator) public view returns (bool) {
         // Whitelist OpenSea proxy contract for easy trading.
@@ -79,5 +82,4 @@ contract ColorNFT is ERC721Full, Ownable, Pausable {
         }
         return super.isApprovedForAll(owner, operator);
     }
-
 }
